@@ -70,11 +70,41 @@ function scrape() {
         });
 }
 
-scrape();
+// scrape();
 setInterval(function() {
     scrape();
 }, 1000 * 120);
 
+console.log('scrape!');
+var nightmare = Nightmare({ show: false, openDevTools: false });
+nightmare
+    .goto(intialUrl)
+    .wait('input[value="Accedi"]')
+    .type('input[name="identity"]', info.username)
+    .type('input[name="credential"]', info.password)
+    .wait(500 + 1000 * Math.random())
+    .click('input[value="Accedi"]')
+    .wait('a[href="/logout"]')
+    .goto(dataUrl)
+    .inject('js', './node_modules/d3/build/d3.js')
+    .wait('pre')
+    .evaluate(function() {
+        return d3.select('pre').html();
+    })
+    // .goto(areaUtente)
+    // .wait('a[href="/logout"]')
+    // .click('a[href="/logout"]')
+    .end()
+    .then(function(result) {
+        var data = JSON.parse(result);
+        var now = d3.now();
+        console.log('writing to firebase', timeFormatter(now));
+        firebase.database().ref('/' + timeFormatter(now)).set({
+            time: now,
+            positions: data,
+        });
 
-
-
+    })
+    .catch(function(error) {
+        console.error('Search failed:', error);
+    });
