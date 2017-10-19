@@ -70,7 +70,7 @@ function scrape() {
         });
 }
 
-// scrape();
+scrape();
 setInterval(function() {
     scrape();
 }, 1000 * 120);
